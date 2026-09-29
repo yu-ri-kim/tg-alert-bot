@@ -1,0 +1,1 @@
+{"data": {"bizItems": [{"bizItemId": "1001", "name": "item-1", "isImp": true, "isClosedBooking": false, "bookableSettingJson": {"isPaused": false, "isOpened": true}}, {"bizItemId": "1002", "name": "item-2", "isImp": true, "isClosedBooking": false, "bookableSettingJson": {"isPaused": false, "isOpened": true}}]}}
