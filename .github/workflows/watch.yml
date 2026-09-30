@@ -1,33 +1,53 @@
-name: scheduled-check
+[200~name: scheduled-check
+
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # Avoid running exactly at the top of the hour.
+    # Runs every 5 minutes: :02, :07, :12, ... :57
+    - cron: "2-59/5 * * * *"
   workflow_dispatch:
 
-concurrency: check
+concurrency:
+  group: scheduled-check
+  cancel-in-progress: true
 
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: pip install -q -r requirements.txt
-      - uses: actions/cache/restore@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -q -r requirements.txt
+
+      - name: Restore state
+        uses: actions/cache/restore@v4
         with:
           path: state.json
           key: state-${{ github.run_id }}
-          restore-keys: state-
-      - run: python watcher.py --once
+          restore-keys: |
+            state-
+
+      - name: Run watcher
+        run: python watcher.py --once
         env:
           BIZ_ID: ${{ secrets.BIZ_ID }}
           PLACE_NAME: ${{ secrets.PLACE_NAME }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      - uses: actions/cache/save@v4
+
+      - name: Save state
         if: always()
+        uses: actions/cache/save@v4
         with:
           path: state.json
           key: state-${{ github.run_id }}
+
