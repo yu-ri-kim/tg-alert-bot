@@ -1,4 +1,4 @@
-[200~name: scheduled-check
+name: scheduled-check
 
 on:
   schedule:
